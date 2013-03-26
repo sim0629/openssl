@@ -81,9 +81,9 @@ extern "C" {
 
 #ifndef OPENSSL_SYS_VMS
 #define X509_CERT_AREA		OPENSSLDIR
-#define X509_CERT_DIR		OPENSSLDIR "/certs"
-#define X509_CERT_FILE		OPENSSLDIR "/cert.pem"
-#define X509_PRIVATE_DIR	OPENSSLDIR "/private"
+#define X509_CERT_DIR		OPENSSLDIR "\\certs"
+#define X509_CERT_FILE		OPENSSLDIR "\\cert.pem"
+#define X509_PRIVATE_DIR	OPENSSLDIR "\\private"
 #else
 #define X509_CERT_AREA		"SSLROOT:[000000]"
 #define X509_CERT_DIR		"SSLCERTS:"

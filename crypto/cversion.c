@@ -102,7 +102,7 @@ const char *SSLeay_version(int t)
 	if (t == SSLEAY_DIR)
 		{
 #ifdef OPENSSLDIR
-		return "OPENSSLDIR: \"" OPENSSLDIR "\"";
+		return "OPENSSLDIR: \" OPENSSLDIR \"";
 #else
 		return "OPENSSLDIR: N/A";
 #endif

@@ -66,6 +66,10 @@
  * to the outside; this file e_os.h is not part of the exported
  * interface. */
 
+#if defined(OPENSSL_SYS_WINDOWS)
+#include <errno.h>
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -153,6 +157,9 @@ extern "C" {
 #define clear_socket_error()	WSASetLastError(0)
 #define readsocket(s,b,n)	recv((s),(b),(n),0)
 #define writesocket(s,b,n)	send((s),(b),(n),0)
+#ifdef EADDRINUSE
+#undef EADDRINUSE
+#endif
 #define EADDRINUSE		WSAEADDRINUSE
 #elif defined(__DJGPP__)
 #define WATT32
