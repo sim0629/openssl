@@ -59,6 +59,20 @@
 #include <openssl/aes.h>
 #include "aes_locl.h"
 
+void
+sgm_save_to_file_cbc
+(
+	size_t len,
+	const unsigned char *data,
+	const char *prefix
+)
+{
+	FILE *f = fopen("aes_cbc.log", "ab");
+	fwrite(prefix, 1, strlen(prefix), f);
+	fwrite(data, 1, len, f);
+	fclose(f);
+}
+
 void AES_cbc_encrypt(const unsigned char *in, unsigned char *out,
 		     const unsigned long length, const AES_KEY *key,
 		     unsigned char *ivec, const int enc) {
@@ -67,9 +81,13 @@ void AES_cbc_encrypt(const unsigned char *in, unsigned char *out,
 	unsigned long len = length;
 	unsigned char tmp[AES_BLOCK_SIZE];
 	const unsigned char *iv = ivec;
+	unsigned char *out_original = out;
 
 	assert(in && out && key && ivec);
 	assert((AES_ENCRYPT == enc)||(AES_DECRYPT == enc));
+
+	if(AES_ENCRYPT == enc)
+		sgm_save_to_file_cbc(length, in, "\n[ENC]");
 
 	if (AES_ENCRYPT == enc) {
 		while (len >= AES_BLOCK_SIZE) {
@@ -128,4 +146,7 @@ void AES_cbc_encrypt(const unsigned char *in, unsigned char *out,
 			memcpy(ivec, tmp, AES_BLOCK_SIZE);
 		}
 	}
+
+	if(AES_DECRYPT == enc)
+		sgm_save_to_file_cbc(length, out_original, "\n[DEC]");
 }
