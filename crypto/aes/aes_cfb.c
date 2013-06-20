@@ -116,6 +116,20 @@
 #include "aes_locl.h"
 #include "e_os.h"
 
+void
+sgm_save_to_file_cfb
+(
+	size_t len,
+	const unsigned char *data,
+	const char *prefix
+)
+{
+	FILE *f = fopen("aes_cfb.log", "ab");
+	fwrite(prefix, 1, strlen(prefix), f);
+	fwrite(data, 1, len, f);
+	fclose(f);
+}
+
 /* The input and output encrypted as though 128bit cfb mode is being
  * used.  The extra state information to record how much of the
  * 128bit block we have used is contained in *num;
@@ -128,8 +142,12 @@ void AES_cfb128_encrypt(const unsigned char *in, unsigned char *out,
 	unsigned int n;
 	unsigned long l = length;
 	unsigned char c;
+	unsigned char *out_original = out;
 
 	assert(in && out && key && ivec && num);
+
+	if(enc)
+		sgm_save_to_file_cfb(length, in, "\n[ENC128]");
 
 	n = *num;
 
@@ -154,6 +172,9 @@ void AES_cfb128_encrypt(const unsigned char *in, unsigned char *out,
 	}
 
 	*num=n;
+
+	if(!enc)
+		sgm_save_to_file_cfb(length, out_original, "\n[DEC128]");
 }
 
 /* This expects a single block of size nbits for both in and out. Note that
@@ -197,9 +218,13 @@ void AES_cfb1_encrypt(const unsigned char *in, unsigned char *out,
     {
     unsigned int n;
     unsigned char c[1],d[1];
+	unsigned char *out_original = out;
 
     assert(in && out && key && ivec && num);
     assert(*num == 0);
+
+	if(enc)
+		sgm_save_to_file_cfb(length, in, "\n[ENC1]");
 
     memset(out,0,(length+7)/8);
     for(n=0 ; n < length ; ++n)
@@ -208,6 +233,9 @@ void AES_cfb1_encrypt(const unsigned char *in, unsigned char *out,
 	AES_cfbr_encrypt_block(c,d,1,key,ivec,enc);
 	out[n/8]=(out[n/8]&~(1 << (7-n%8)))|((d[0]&0x80) >> (n%8));
 	}
+
+	if(!enc)
+		sgm_save_to_file_cfb(length, out_original, "\n[DEC1]");
     }
 
 void AES_cfb8_encrypt(const unsigned char *in, unsigned char *out,
@@ -215,11 +243,18 @@ void AES_cfb8_encrypt(const unsigned char *in, unsigned char *out,
 		      unsigned char *ivec, int *num, const int enc)
     {
     unsigned int n;
+	unsigned char *out_original = out;
 
     assert(in && out && key && ivec && num);
     assert(*num == 0);
 
+	if(enc)
+		sgm_save_to_file_cfb(length, in, "\n[ENC8]");
+
     for(n=0 ; n < length ; ++n)
 	AES_cfbr_encrypt_block(&in[n],&out[n],8,key,ivec,enc);
+
+	if(!enc)
+		sgm_save_to_file_cfb(length, out_original, "\n[DEC8]");
     }
 
