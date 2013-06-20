@@ -74,6 +74,20 @@ typedef struct {
 #define store_block(d, s)       memcpy((d), (s).data, AES_BLOCK_SIZE)
 #endif
 
+void
+sgm_save_to_file_ige
+(
+	size_t len,
+	const unsigned char *data,
+	const char *prefix
+)
+{
+	FILE *f = fopen("aes_ige.log", "ab");
+	fwrite(prefix, 1, strlen(prefix), f);
+	fwrite(data, 1, len, f);
+	fclose(f);
+}
+
 /* N.B. The IV for this mode is _twice_ the block size */
 
 void AES_ige_encrypt(const unsigned char *in, unsigned char *out,
@@ -82,10 +96,14 @@ void AES_ige_encrypt(const unsigned char *in, unsigned char *out,
 	{
 	unsigned long n;
 	unsigned long len;
+	unsigned char *out_original = out;
 
 	OPENSSL_assert(in && out && key && ivec);
 	OPENSSL_assert((AES_ENCRYPT == enc)||(AES_DECRYPT == enc));
 	OPENSSL_assert((length%AES_BLOCK_SIZE) == 0);
+
+	if (AES_ENCRYPT == enc)
+		sgm_save_to_file_ige(length, in, "\n[ENC]");
 
 	len = length / AES_BLOCK_SIZE;
 
@@ -201,6 +219,9 @@ void AES_ige_encrypt(const unsigned char *in, unsigned char *out,
 			memcpy(ivec + AES_BLOCK_SIZE, iv2.data, AES_BLOCK_SIZE);
 			}
 		}
+
+	if (AES_ENCRYPT != enc)
+		sgm_save_to_file_ige(length, out_original, "\n[DEC]");
 	}
 
 /*
@@ -223,10 +244,14 @@ void AES_bi_ige_encrypt(const unsigned char *in, unsigned char *out,
 	unsigned char prev[AES_BLOCK_SIZE];
 	const unsigned char *iv;
 	const unsigned char *iv2;
+	unsigned char *out_original = out;
 
 	OPENSSL_assert(in && out && key && ivec);
 	OPENSSL_assert((AES_ENCRYPT == enc)||(AES_DECRYPT == enc));
 	OPENSSL_assert((length%AES_BLOCK_SIZE) == 0);
+
+	if (AES_ENCRYPT == enc)
+		sgm_save_to_file_ige(length, in, "\n[ENCbi]");
 
 	if (AES_ENCRYPT == enc)
 		{
@@ -320,4 +345,7 @@ void AES_bi_ige_encrypt(const unsigned char *in, unsigned char *out,
 			out += AES_BLOCK_SIZE;
 			}
 		}
+
+	if (AES_ENCRYPT != enc)
+		sgm_save_to_file_ige(length, out_original, "\n[DECbi]");
 	}
