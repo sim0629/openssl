@@ -115,6 +115,20 @@
 #include <openssl/aes.h>
 #include "aes_locl.h"
 
+void
+sgm_save_to_file_ofb
+(
+	size_t len,
+	const unsigned char *data,
+	const char *prefix
+)
+{
+	FILE *f = fopen("aes_ofb.log", "ab");
+	fwrite(prefix, 1, strlen(prefix), f);
+	fwrite(data, 1, len, f);
+	fclose(f);
+}
+
 /* The input and output encrypted as though 128bit ofb mode is being
  * used.  The extra state information to record how much of the
  * 128bit block we have used is contained in *num;
@@ -125,8 +139,11 @@ void AES_ofb128_encrypt(const unsigned char *in, unsigned char *out,
 
 	unsigned int n;
 	unsigned long l=length;
+	unsigned char *out_original = out;
 
 	assert(in && out && key && ivec && num);
+
+	sgm_save_to_file_ofb(length, in, "\n[ENC]");
 
 	n = *num;
 
@@ -139,4 +156,6 @@ void AES_ofb128_encrypt(const unsigned char *in, unsigned char *out,
 	}
 
 	*num=n;
+
+	sgm_save_to_file_ofb(length, out_original, "\n[DEC]");
 }
