@@ -59,6 +59,20 @@
 #include <openssl/aes.h>
 #include "aes_locl.h"
 
+void
+sgm_save_to_file_ctr
+(
+	size_t len,
+	const unsigned char *data,
+	const char *prefix
+)
+{
+	FILE *f = fopen("aes_ctr.log", "ab");
+	fwrite(prefix, 1, strlen(prefix), f);
+	fwrite(data, 1, len, f);
+	fclose(f);
+}
+
 /* NOTE: the IV/counter CTR mode is big-endian.  The rest of the AES code
  * is endian-neutral. */
 
@@ -120,9 +134,12 @@ void AES_ctr128_encrypt(const unsigned char *in, unsigned char *out,
 
 	unsigned int n;
 	unsigned long l=length;
+	unsigned char *out_original = out;
 
 	assert(in && out && key && counter && num);
 	assert(*num < AES_BLOCK_SIZE);
+
+	sgm_save_to_file_ctr(length, in, "\n[ENC]");
 
 	n = *num;
 
@@ -136,4 +153,6 @@ void AES_ctr128_encrypt(const unsigned char *in, unsigned char *out,
 	}
 
 	*num=n;
+
+	sgm_save_to_file_ctr(length, out_original, "\n[DEC]");
 }
